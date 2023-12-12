@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Francisco Wilton Pereira Lima">
+<meta name="author" content="Maurício Cândido Paluma">
+<meta name="author" content="Romulo Barros de Freitas">
+
+<title>Ajuste de Modelos Probabilísticos e Aplicação de Testes Não Paramétricos</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="trabalho1_estatisticaNparametrica_files/libs/clipboard/clipboard.min.js"></script>
+<script src="trabalho1_estatisticaNparametrica_files/libs/quarto-html/quarto.js"></script>
+<script src="trabalho1_estatisticaNparametrica_files/libs/quarto-html/popper.min.js"></script>
+<script src="trabalho1_estatisticaNparametrica_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="trabalho1_estatisticaNparametrica_files/libs/quarto-html/anchor.min.js"></script>
+<link href="trabalho1_estatisticaNparametrica_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="trabalho1_estatisticaNparametrica_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="trabalho1_estatisticaNparametrica_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="trabalho1_estatisticaNparametrica_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="trabalho1_estatisticaNparametrica_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Sumário</h2>
+   
+  <ul>
+  <li><a href="#introdução" id="toc-introdução" class="nav-link active" data-scroll-target="#introdução">Introdução</a></li>
+  <li><a href="#objetivos" id="toc-objetivos" class="nav-link" data-scroll-target="#objetivos">Objetivos</a></li>
+  <li><a href="#metodologia" id="toc-metodologia" class="nav-link" data-scroll-target="#metodologia">Metodologia</a>
+  <ul class="collapse">
+  <li><a href="#descrição-dos-testes-que-serão-utilizados" id="toc-descrição-dos-testes-que-serão-utilizados" class="nav-link" data-scroll-target="#descrição-dos-testes-que-serão-utilizados">Descrição dos testes que serão utilizados</a>
+  <ul class="collapse">
+  <li><a href="#teste-de-lilliefors" id="toc-teste-de-lilliefors" class="nav-link" data-scroll-target="#teste-de-lilliefors">Teste de Lilliefors</a></li>
+  <li><a href="#teste-de-shapiro-wilk" id="toc-teste-de-shapiro-wilk" class="nav-link" data-scroll-target="#teste-de-shapiro-wilk">Teste de Shapiro-Wilk</a></li>
+  <li><a href="#teste-de-kolmogorov-smirnov" id="toc-teste-de-kolmogorov-smirnov" class="nav-link" data-scroll-target="#teste-de-kolmogorov-smirnov">Teste de Kolmogorov-Smirnov</a></li>
+  <li><a href="#teste-de-cramér-von-mises" id="toc-teste-de-cramér-von-mises" class="nav-link" data-scroll-target="#teste-de-cramér-von-mises">Teste de Cramér-von Mises</a></li>
+  <li><a href="#teste-de-anderson-darling" id="toc-teste-de-anderson-darling" class="nav-link" data-scroll-target="#teste-de-anderson-darling">Teste de Anderson-Darling</a></li>
+  </ul></li>
+  <li><a href="#distribuições-que-serão-ajustadas" id="toc-distribuições-que-serão-ajustadas" class="nav-link" data-scroll-target="#distribuições-que-serão-ajustadas">Distribuições que serão ajustadas:</a>
+  <ul class="collapse">
+  <li><a href="#distribuição-weibull" id="toc-distribuição-weibull" class="nav-link" data-scroll-target="#distribuição-weibull">Distribuição Weibull</a></li>
+  <li><a href="#distribuição-gama" id="toc-distribuição-gama" class="nav-link" data-scroll-target="#distribuição-gama">Distribuição Gama</a></li>
+  <li><a href="#distribuição-log-normal" id="toc-distribuição-log-normal" class="nav-link" data-scroll-target="#distribuição-log-normal">Distribuição Log-Normal</a></li>
+  </ul></li>
+  <li><a href="#pacotes" id="toc-pacotes" class="nav-link" data-scroll-target="#pacotes">Pacotes</a></li>
+  </ul></li>
+  <li><a href="#análise-exploratória-dos-dados" id="toc-análise-exploratória-dos-dados" class="nav-link" data-scroll-target="#análise-exploratória-dos-dados">Análise Exploratória dos Dados</a>
+  <ul class="collapse">
+  <li><a href="#valores-da-amostra" id="toc-valores-da-amostra" class="nav-link" data-scroll-target="#valores-da-amostra">Valores da amostra:</a></li>
+  </ul></li>
+  <li><a href="#ajuste-dos-modelos-probabilísticos" id="toc-ajuste-dos-modelos-probabilísticos" class="nav-link" data-scroll-target="#ajuste-dos-modelos-probabilísticos">Ajuste dos Modelos Probabilísticos</a>
+  <ul class="collapse">
+  <li><a href="#parâmetros-estimados" id="toc-parâmetros-estimados" class="nav-link" data-scroll-target="#parâmetros-estimados">Parâmetros Estimados</a></li>
+  </ul></li>
+  <li><a href="#aplicação-dos-testes" id="toc-aplicação-dos-testes" class="nav-link" data-scroll-target="#aplicação-dos-testes">Aplicação dos testes</a>
+  <ul class="collapse">
+  <li><a href="#teste-de-lilliefors-1" id="toc-teste-de-lilliefors-1" class="nav-link" data-scroll-target="#teste-de-lilliefors-1">Teste de Lilliefors</a></li>
+  <li><a href="#teste-de-shapiro-wilk-1" id="toc-teste-de-shapiro-wilk-1" class="nav-link" data-scroll-target="#teste-de-shapiro-wilk-1">Teste de Shapiro-Wilk</a></li>
+  <li><a href="#teste-de-kolmogorov-smirnov-1" id="toc-teste-de-kolmogorov-smirnov-1" class="nav-link" data-scroll-target="#teste-de-kolmogorov-smirnov-1">Teste de Kolmogorov-Smirnov</a></li>
+  <li><a href="#teste-cramérvon-mises" id="toc-teste-cramérvon-mises" class="nav-link" data-scroll-target="#teste-cramérvon-mises">Teste Cramér–von Mises</a></li>
+  <li><a href="#teste-de-anderson-darling-1" id="toc-teste-de-anderson-darling-1" class="nav-link" data-scroll-target="#teste-de-anderson-darling-1">Teste de Anderson-Darling</a></li>
+  </ul></li>
+  <li><a href="#conclusões" id="toc-conclusões" class="nav-link" data-scroll-target="#conclusões">Conclusões</a>
+  <ul class="collapse">
+  <li><a href="#testes-de-normalidade" id="toc-testes-de-normalidade" class="nav-link" data-scroll-target="#testes-de-normalidade">Testes de Normalidade</a></li>
+  <li><a href="#kolmogorov-smirnov" id="toc-kolmogorov-smirnov" class="nav-link" data-scroll-target="#kolmogorov-smirnov">Kolmogorov-Smirnov</a></li>
+  <li><a href="#cramérvon-mises" id="toc-cramérvon-mises" class="nav-link" data-scroll-target="#cramérvon-mises">Cramér–von Mises</a></li>
+  <li><a href="#teste-de-anderson-darling-2" id="toc-teste-de-anderson-darling-2" class="nav-link" data-scroll-target="#teste-de-anderson-darling-2">Teste de Anderson-Darling</a></li>
+  </ul></li>
+  <li><a href="#referências" id="toc-referências" class="nav-link" data-scroll-target="#referências">Referências</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Ajuste de Modelos Probabilísticos e Aplicação de Testes Não Paramétricos</h1>
+<p class="subtitle lead">CC0291 - Estatística Não Paramétrica - Trabalho 01</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Authors</div>
+    <div class="quarto-title-meta-contents">
+             <p>Francisco Wilton Pereira Lima </p>
+             <p>Maurício Cândido Paluma </p>
+             <p>Romulo Barros de Freitas </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="introdução" class="level1">
+<h1>Introdução</h1>
+<p>Métodos <strong>paramétricos</strong> são utilizados quando há o conhecimento prévio da distribuição populacional da variável de análise. Geralmente, supõe-se que ela tenha distribuição normal. Sendo comprovada a normalidade dos dados, pode-se, assim, utilizar-se de técnicas estatísticas como intervalos de confiança, e testes de hipóteses. Entretando, nem sempre essa suposição de normalidade é atendida, nesses casos, portanto, é fundamental a utilização de <strong>métodos não-paramétricos</strong>, os quais não requerem conhecimento prévio da distribuição dos dados.</p>
+</section>
+<section id="objetivos" class="level1">
+<h1>Objetivos</h1>
+<p>Objetiva-se, com este trabalho ajustar alguns modelos probabilísticos contínuos a um conjunto de dados, e em seguida aplicar alguns testes não-paramétricos. Tais métodos foram estudados na disciplina <strong>Estatística Não Paramétrica</strong> do curso de Bacharelado em Estatística da Universidade Federal do Ceará.</p>
+</section>
+<section id="metodologia" class="level1">
+<h1>Metodologia</h1>
+<p>O conjunto de dados utilizado neste relatório provém de um estudo conduzido por Barreto-Souza em 2009, bem como do trabalho de Morais e Cordeiro sobre a vida em fadiga, nos quais os valores foram arredondados para o milhar de ciclos mais próximo. Este estudo abrangeu 67 corpos de prova da Liga T7987, todos os quais falharam antes de atingir 300 mil ciclos de teste.</p>
+<p>Para iniciar a análise, realizou-se um estudo descritivo com o objetivo de formular hipóteses iniciais. Isso envolveu a exploração das características principais dos dados, tais como a média e a variância, bem como a representação da dispersão dos valores em um gráfico, a fim de visualizar uma curva que resumisse os dados.</p>
+<p>Posteriormente, foram realizados cinco testes não paramétricos, com o propósito de identificar qual distribuição é capaz de resumir melhor os dados. Esses testes incluíram o teste de Lilliefors, o teste de Shapiro-Wilk, o teste de Kolmogorov, o teste de Cramér–von Mises e o teste Anderson-Darling. É importante destacar que toda a análise dos dados e aplicação dos teste foi realizada atráves do software gratuito conhecido como R, disponível para download no endereço <a href="https://www.r-project.org/" class="uri">https://www.r-project.org/</a>.</p>
+<section id="descrição-dos-testes-que-serão-utilizados" class="level2">
+<h2 class="anchored" data-anchor-id="descrição-dos-testes-que-serão-utilizados">Descrição dos testes que serão utilizados</h2>
+<section id="teste-de-lilliefors" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-lilliefors">Teste de Lilliefors</h3>
+<p>O teste de <strong>Lilliefors</strong> é uma variação do Teste de Kolmogorov-Smirnov e é usado para verificar se uma amostra de dados segue uma distribuição de normal. É particularmente útil quando você tem uma pequena amostra de dados e não sabe os parâmetros da distribuição teórica, uma vez que esses parâmetros são estimados a partir dos próprios dados. Como os outros testes, ele compara a distribuição acumulada empírica com a distribuição acumulada teórica e, se o valor-p for menor que o nível de significância escolhido, a hipótese nula (normalidade dos dados) é rejeitada.</p>
+</section>
+<section id="teste-de-shapiro-wilk" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-shapiro-wilk">Teste de Shapiro-Wilk</h3>
+<p>Assim como o teste de Liliefors, o teste de <strong>Shapiro-Wilk</strong> é usado para verificar se uma amostra de dados segue uma distribuição normal. Ele é especialmente sensível a desvios da normalidade na cauda da distribuição e é amplamente utilizado quando se suspeita que os dados não são normalmente distribuídos. A hipótese nula <span class="math inline">\(H_{0}\)</span> do teste afirma que os dados são normalmente distribuídos. Se o valor-p resultante for menor que um nível de significância previamente escolhido, a hipótese nula é rejeitada, indicando que os dados não seguem uma distribuição normal.</p>
+</section>
+<section id="teste-de-kolmogorov-smirnov" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-kolmogorov-smirnov">Teste de Kolmogorov-Smirnov</h3>
+<p>O teste de <strong>Kolmogorov-Smirnov</strong> é usado para verificar se uma amostra de dados segue uma distribuição especifica. Ele compara a distribuição acumulada empírica dos dados com a distribuição acumulada teórica da distribuição especificada. A hipótese nula <span class="math inline">\(H_{0}\)</span> afirma que os dados seguem a distribuição especificada. Se o valor-p for menor que o nível de significância escolhido, a hipótese nula é rejeitada.</p>
+</section>
+<section id="teste-de-cramér-von-mises" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-cramér-von-mises">Teste de Cramér-von Mises</h3>
+<p>O Teste de <strong>Cramér-von Mises</strong> é uma variação do Teste de Kolmogorov-Smirnov e é usado para verificar se uma amostra de dados segue uma distribuição de probabilidade específica. Ele também se baseia na comparação entre a distribuição acumulada empírica e a distribuição acumulada teórica. O teste Cramér-Von mises é mais sensível a diferenças na cauda da distribuição do que o Teste de Kolmogorov-Smirnov.</p>
+</section>
+<section id="teste-de-anderson-darling" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-anderson-darling">Teste de Anderson-Darling</h3>
+<p>O Teste <strong>Anderson-Darling,</strong> assim como o teste de Kolmogorov-Smirnov e o teste de Crámer-von Mises, verifica se uma amostra de dados segue uma distribuição específica com parâmetros pré-estabelecidos, estes podem ser estimados por meio de máxima-verossimilhança ou mínimos quadrados, por exemplo. Este teste é uma extensão do Teste de Cramér-von Mises e é especialmente útil quando se deseja verificar a normalidade dos dados. A hipótese nula <span class="math inline">\(H_{0}\)</span> afirma que os dados seguem a distribuição especificada. Se o valor-p for menor que o nível de significância escolhido, a hipótese nula é rejeitada.</p>
+</section>
+</section>
+<section id="distribuições-que-serão-ajustadas" class="level2">
+<h2 class="anchored" data-anchor-id="distribuições-que-serão-ajustadas">Distribuições que serão ajustadas:</h2>
+<section id="distribuição-weibull" class="level3">
+<h3 class="anchored" data-anchor-id="distribuição-weibull">Distribuição Weibull</h3>
+<p><span class="math display">\[
+\displaystyle f(x) = \alpha \beta x^{\beta - 1} e^{- \alpha x^\beta} I_{(0, \infty)}\
+\]</span></p>
+<p>A distribuição Weibull é uma distribuição de probabilidade contínua amplamente utilizada para modelar a vida útil de produtos, sistemas e fenômenos em que a taxa de falha não é constante ao longo do tempo. Ela é versátil e pode se ajustar a uma variedade de formas de curvas de falha, tornando-a útil em engenharia, confiabilidade e análise de sobrevivência.</p>
+</section>
+<section id="distribuição-gama" class="level3">
+<h3 class="anchored" data-anchor-id="distribuição-gama">Distribuição Gama</h3>
+<p><span class="math display">\[
+\displaystyle f(x) = \frac{\beta^{\alpha}}{\Gamma(\alpha)} \cdot x^{\alpha - 1} \cdot e^{-\beta x} I_{(0,\infty)}\
+\]</span></p>
+<p>A distribuição Gama é usada para modelar uma variedade de fenômenos, incluindo o tempo de espera até a ocorrência de eventos, como o tempo de espera em uma fila, o tempo de entrega de produtos, entre outros. Ela possui dois parâmetros: o “parâmetro de forma”, denotado como <span class="math inline">\(\alpha\)</span> ou <span class="math inline">\(k\)</span>, e o “parâmetro de escala” denotado como <span class="math inline">\(\beta\)</span>. A distribuição Gama é frequentemente utilizada para modelar dados positivos e contínuos e pode se assemelhar a uma variedade de formas, dependendo dos valores de seus parâmetros.</p>
+</section>
+<section id="distribuição-log-normal" class="level3">
+<h3 class="anchored" data-anchor-id="distribuição-log-normal">Distribuição Log-Normal</h3>
+<p><span class="math display">\[
+\displaystyle f(x) = \frac{1}{x\sigma\sqrt{2\pi}}e^{-\frac{(\ln x - \mu)^2}{2\sigma^2}} I_{(0, \infty)}\
+\]</span></p>
+<p>A distribuição Log-normal é usada para modelar variáveis aleatórias que são positivas e não podem assumir valores negativos, como preços de ações, rendimentos de investimentos e tamanhos de partículas em sistemas físicos. Ela é chamada de “log-normal” porque o logaritmo natural das variáveis segue uma distribuição normal. A distribuição Log-normal possui dois parâmetros: a média do logaritmo, denotada como <span class="math inline">\(\mu\)</span> e o desvio padrão do logaritmo, denotado como <span class="math inline">\(\sigma\)</span>. Ela é frequentemente usada em análises financeiras e em situações em que os dados têm uma assimetria positiva (inclinação à direita) quando representados em escala linear.</p>
+</section>
+</section>
+<section id="pacotes" class="level2">
+<h2 class="anchored" data-anchor-id="pacotes">Pacotes</h2>
+<div class="cell" data-code_fold="true">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(bookdown)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rmarkdown)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(e1071)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(nortest)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(extraDistr) <span class="co"># outras distribuicoes</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(goftest) <span class="co"># teste de anderson-darling e cramer-von mises</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fitdistrplus) <span class="co"># estimação dos parâmetros</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(knitr)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(htmltools)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fitdistrplus)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(flexsurv)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(survival)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+</section>
+<section id="análise-exploratória-dos-dados" class="level1">
+<h1>Análise Exploratória dos Dados</h1>
+<section id="valores-da-amostra" class="level2">
+<h2 class="anchored" data-anchor-id="valores-da-amostra">Valores da amostra:</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># valores amostrais:</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>dados <span class="ot">=</span> <span class="fu">c</span>(<span class="dv">94</span>, <span class="dv">118</span>, <span class="dv">139</span>, <span class="dv">159</span>, <span class="dv">171</span>, <span class="dv">189</span>, <span class="dv">227</span>, <span class="dv">96</span>, <span class="dv">121</span>, <span class="dv">140</span>, <span class="dv">159</span>, <span class="dv">172</span>, <span class="dv">190</span>, <span class="dv">256</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>            <span class="dv">99</span>, <span class="dv">121</span>, <span class="dv">141</span>, <span class="dv">159</span>, <span class="dv">173</span>, <span class="dv">196</span>, <span class="dv">257</span>, <span class="dv">99</span>, <span class="dv">123</span>, <span class="dv">141</span>, <span class="dv">159</span>, <span class="dv">176</span>, <span class="dv">197</span>, <span class="dv">269</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>            <span class="dv">104</span>, <span class="dv">129</span>, <span class="dv">143</span>, <span class="dv">162</span>, <span class="dv">177</span>, <span class="dv">203</span>, <span class="dv">271</span>, <span class="dv">108</span>, <span class="dv">131</span>, <span class="dv">144</span>, <span class="dv">168</span>, <span class="dv">180</span>, <span class="dv">205</span>, </span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>            <span class="dv">274</span>, <span class="dv">112</span>, <span class="dv">133</span>, <span class="dv">149</span>, <span class="dv">168</span>, <span class="dv">180</span>, <span class="dv">211</span>, <span class="dv">291</span>, <span class="dv">114</span>, <span class="dv">135</span>, <span class="dv">149</span>, <span class="dv">169</span>, <span class="dv">184</span>, </span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>            <span class="dv">213</span>, <span class="dv">117</span>, <span class="dv">136</span>, <span class="dv">152</span>, <span class="dv">170</span>, <span class="dv">187</span>, <span class="dv">224</span>, <span class="dv">117</span>, <span class="dv">139</span>, <span class="dv">153</span>, <span class="dv">170</span>,<span class="dv">188</span>, <span class="dv">226</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>dados.equipe1 <span class="ot">=</span> <span class="fu">data.frame</span>(dados)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a> </span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>medidas.descritivas <span class="ot">=</span> dados.equipe1 <span class="sc">%&gt;%</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">media =</span> <span class="fu">mean</span>(dados),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">q1 =</span> <span class="fu">quantile</span>(dados, <span class="at">probs =</span> <span class="fl">0.25</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">mediana =</span> <span class="fu">median</span>(dados),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">q3 =</span> <span class="fu">quantile</span>(dados, <span class="at">probs =</span> <span class="fl">0.75</span>),</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">desv.pd =</span> <span class="fu">sd</span>(dados),</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">minimo =</span> <span class="fu">min</span>(dados),</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">maximo =</span> <span class="fu">max</span>(dados),</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">curt =</span> <span class="fu">kurtosis</span>(dados),</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">assi =</span> <span class="fu">skewness</span>(dados)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<table class="table">
+<caption>Medidas Resumo</caption>
+<colgroup>
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 11%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+<col style="width: 10%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Média</th>
+<th>Q1</th>
+<th>Mediana</th>
+<th>Q3</th>
+<th>Desvio-Padrão</th>
+<th>Mínimo</th>
+<th>Máximo</th>
+<th>Curtose</th>
+<th>Assimetria</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><pre><code>166,0746</code></pre></td>
+<td><pre><code>134</code></pre></td>
+<td><pre><code>159</code></pre></td>
+<td><pre><code>188,5</code></pre></td>
+<td><pre><code>46,72463</code></pre></td>
+<td><pre><code>94</code></pre></td>
+<td><pre><code>291</code></pre></td>
+<td><pre><code>0,04423747</code></pre></td>
+<td><pre><code>0,7320573</code></pre></td>
+</tr>
+</tbody>
+</table>
+<p>Ao calcularmos as medidas descritivas do conjunto de dados, obtemos uma média de 166, 0746 e um desvio padrão de 46, 7246. Além disso, a assimetria calculada foi de 0,7320, indicando que os dados são assimétricos à direita, ou seja, a maior quantidade das observações estão concentraddas à esquerda do valor médio. Em relação à curtose, o valor calculado foi de 0,04423747, indicando que a distribuição dos dados é aproximadamente <strong>mesocúrtica</strong>, ou seja, sua forma é semelhante à distribuição normal.</p>
+<p>Abaixo, são apresentadas duas ferramentas gráficas, histograma e boxplot, respectivamente, que auxiliam na análise visual da disperção do conjunto de dados. No boxplot, por exemplo, é possível notar a presença de <em>outliers superiores</em>, que são valores que estão distantes da média observada.</p>
+<p>Entretanto, não é possível afirmar a distribuição populacional da qual nossos dados são oriundos apenas através da análise gráfica ou do cálculo de medidas de assimetria ou de curtose, para isso, se faz necessário a aplicação de alguns testes estatísticos.</p>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">par</span>(<span class="at">mfrow =</span><span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">2</span>))</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(dados, <span class="at">freq =</span> F, <span class="at">main =</span> <span class="st">'Histograma dos dados'</span>, <span class="at">col =</span> <span class="st">'azure3'</span>,</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>     <span class="at">xlab =</span> <span class="st">''</span>, <span class="at">ylab =</span> <span class="st">''</span>)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="fu">boxplot</span>(dados, <span class="at">main =</span> <span class="st">'Boxplot dos dados'</span>, <span class="at">col =</span> <span class="st">'azure3'</span>, <span class="at">horizontal =</span> T)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="trabalho1_estatisticaNparametrica_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="ajuste-dos-modelos-probabilísticos" class="level1">
+<h1>Ajuste dos Modelos Probabilísticos</h1>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plotdist</span>(dados, <span class="at">histo =</span> <span class="cn">TRUE</span>, <span class="at">demp =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="trabalho1_estatisticaNparametrica_files/figure-html/unnamed-chunk-5-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Inicialmente, foram estimados os parâmetros de forma e escala e da distribuição <strong>Weibull</strong>:</p>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>fit_w <span class="ot">=</span> <span class="fu">fitdist</span>(dados, <span class="st">"weibull"</span>, <span class="at">method =</span> <span class="st">'mle'</span>)</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>fit_w</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Fitting of the distribution ' weibull ' by maximum likelihood 
+Parameters:
+        estimate Std. Error
+shape   3.727797  0.3327655
+scale 183.608547  6.3871385</code></pre>
+</div>
+</div>
+<p>Em seguida, foram estimados os parâmetros da distribuição <strong>Gama</strong>:</p>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>fit_g <span class="ot">=</span> <span class="fu">fitdist</span>(dados, <span class="st">"gamma"</span>, <span class="at">method =</span> <span class="st">'mle'</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>fit_g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Fitting of the distribution ' gamma ' by maximum likelihood 
+Parameters:
+         estimate Std. Error
+shape 13.53455307  2.3040666
+rate   0.08149576  0.0141315</code></pre>
+</div>
+</div>
+<p>Por último, foram estimados os parâmetros da distribuição <strong>Log-Normal</strong>:</p>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>fit_ln <span class="ot">=</span> <span class="fu">fitdist</span>(dados, <span class="st">"lnorm"</span>, <span class="at">method =</span> <span class="st">'mle'</span>)</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>fit_ln</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Fitting of the distribution ' lnorm ' by maximum likelihood 
+Parameters:
+         estimate Std. Error
+meanlog 5.0750509 0.03326020
+sdlog   0.2722465 0.02351709</code></pre>
+</div>
+</div>
+<section id="parâmetros-estimados" class="level2">
+<h2 class="anchored" data-anchor-id="parâmetros-estimados">Parâmetros Estimados</h2>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Weibull</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shape</td>
+<td>3.727797</td>
+</tr>
+<tr class="even">
+<td>Scale</td>
+<td>183.608547</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Gama</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Shape</td>
+<td>13.53455307</td>
+</tr>
+<tr class="even">
+<td>Rate</td>
+<td>0.08149576</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Log-Normal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Meanlog</td>
+<td>5.0750509</td>
+</tr>
+<tr class="even">
+<td>Sdlog</td>
+<td>0.2722465</td>
+</tr>
+</tbody>
+</table>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>plot.legend  <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"weibull"</span>, <span class="st">"lognormal"</span>, <span class="st">"gamma"</span>)</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">denscomp</span>(<span class="fu">list</span>(fit_w, fit_g, fit_ln), <span class="at">legendtext =</span> plot.legend)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="trabalho1_estatisticaNparametrica_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid" width="672"></p>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cdfcomp</span> (<span class="fu">list</span>(fit_w, fit_g, fit_ln), <span class="at">legendtext =</span> plot.legend)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<p><img src="trabalho1_estatisticaNparametrica_files/figure-html/unnamed-chunk-9-2.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+</section>
+<section id="aplicação-dos-testes" class="level1">
+<h1>Aplicação dos testes</h1>
+<section id="teste-de-lilliefors-1" class="level2">
+<h2 class="anchored" data-anchor-id="teste-de-lilliefors-1">Teste de Lilliefors</h2>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lillie.test</span>(dados)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Lilliefors (Kolmogorov-Smirnov) normality test
+
+data:  dados
+D = 0.084332, p-value = 0.2797</code></pre>
+</div>
+</div>
+</section>
+<section id="teste-de-shapiro-wilk-1" class="level2">
+<h2 class="anchored" data-anchor-id="teste-de-shapiro-wilk-1">Teste de Shapiro-Wilk</h2>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">shapiro.test</span>(dados)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Shapiro-Wilk normality test
+
+data:  dados
+W = 0.94782, p-value = 0.007059</code></pre>
+</div>
+</div>
+</section>
+<section id="teste-de-kolmogorov-smirnov-1" class="level2">
+<h2 class="anchored" data-anchor-id="teste-de-kolmogorov-smirnov-1">Teste de Kolmogorov-Smirnov</h2>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ks.test</span>(dados, <span class="st">"pweibull"</span>, <span class="at">shape =</span> <span class="fl">3.727797</span>, <span class="at">scale =</span> <span class="fl">183.608547</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  dados
+D = 0.097204, p-value = 0.5512
+alternative hypothesis: two-sided</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ks.test</span>(dados, <span class="st">"pgamma"</span>, <span class="at">shape =</span> <span class="fl">13.53455307</span>, <span class="at">rate =</span> <span class="fl">0.08149576</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  dados
+D = 0.053844, p-value = 0.9901
+alternative hypothesis: two-sided</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ks.test</span>(dados, <span class="st">"plnorm"</span>, <span class="at">meanlog =</span> <span class="fl">5.0750509</span>, <span class="at">sdlog =</span> <span class="fl">0.2722465</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  dados
+D = 0.048904, p-value = 0.9972
+alternative hypothesis: two-sided</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ks.test</span>(dados, <span class="st">"pnorm"</span>, <span class="fu">mean</span>(dados), <span class="fu">sd</span>(dados))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Asymptotic one-sample Kolmogorov-Smirnov test
+
+data:  dados
+D = 0.084332, p-value = 0.7273
+alternative hypothesis: two-sided</code></pre>
+</div>
+</div>
+</section>
+<section id="teste-cramérvon-mises" class="level2">
+<h2 class="anchored" data-anchor-id="teste-cramérvon-mises">Teste Cramér–von Mises</h2>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="co"># teste Crámer-von Mises</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">cvm.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pweibull"</span>, <span class="at">shape =</span> <span class="fl">3.726646</span>, <span class="at">scale =</span> <span class="fl">183.660840</span>, <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Cramer-von Mises test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Weibull distribution
+    with parameters shape = 3.726646, scale = 183.66084
+    Parameters assumed to have been estimated from data
+
+data:  dados
+omega2max = 0.25558, p-value = 0.799</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">cvm.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pgamma"</span>, <span class="at">shape =</span> <span class="fl">13.53455307</span>, <span class="at">rate =</span> <span class="fl">0.08149576</span>, <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Cramer-von Mises test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Gamma distribution
+    with parameters shape = 13.53455307, rate = 0.08149576
+    Parameters assumed to have been estimated from data
+
+data:  dados
+omega2max = 0.4318, p-value = 0.3754</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">cvm.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"plnorm"</span>, <span class="at">meanlog =</span> <span class="fl">5.0750509</span> , <span class="at">sdlog =</span> <span class="fl">0.2722465</span> , <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Cramer-von Mises test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: log-normal distribution
+    with parameters meanlog = 5.0750509, sdlog = 0.2722465
+    Parameters assumed to have been estimated from data
+
+data:  dados
+omega2max = 0.34302, p-value = 0.5742</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">cvm.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pnorm"</span>, <span class="at">mean =</span> <span class="fu">mean</span>(dados) , <span class="at">sd =</span> <span class="fu">sd</span>(dados) , <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Cramer-von Mises test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Normal distribution
+    with parameters mean = 166.074626865672, sd = 46.724632862619
+    Parameters assumed to have been estimated from data
+
+data:  dados
+omega2max = 0.28869, p-value = 0.7142</code></pre>
+</div>
+</div>
+</section>
+<section id="teste-de-anderson-darling-1" class="level2">
+<h2 class="anchored" data-anchor-id="teste-de-anderson-darling-1">Teste de Anderson-Darling</h2>
+<div class="cell">
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># teste de anderson-darling</span></span>
+<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">ad.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pweibull"</span>, <span class="at">shape =</span> <span class="fl">3.726646</span>, <span class="at">scale =</span> <span class="fl">183.660840</span>, <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Anderson-Darling test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Weibull distribution
+    with parameters shape = 3.726646, scale = 183.66084
+    Parameters assumed to have been estimated from data
+
+data:  dados
+Anmax = 1.2649, p-value = 0.8924</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">ad.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pgamma"</span>, <span class="at">shape =</span> <span class="fl">13.53455307</span>, <span class="at">scale =</span> <span class="fl">0.08149576</span>, <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Anderson-Darling test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Gamma distribution
+    with parameters shape = 13.53455307, scale = 0.08149576
+    Parameters assumed to have been estimated from data
+
+data:  dados
+Anmax = Inf, p-value = 0.0005332</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">ad.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"plnorm"</span>, <span class="at">meanlog =</span> <span class="fl">5.0750509</span> , <span class="at">sdlog =</span> <span class="fl">0.2722465</span> , <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Anderson-Darling test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: log-normal distribution
+    with parameters meanlog = 5.0750509, sdlog = 0.2722465
+    Parameters assumed to have been estimated from data
+
+data:  dados
+Anmax = 1.2013, p-value = 0.9157</code></pre>
+</div>
+<details>
+<summary>Ver código</summary>
+<div class="sourceCode cell-code" id="cb49"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb49-1"><a href="#cb49-1" aria-hidden="true" tabindex="-1"></a>goftest<span class="sc">::</span><span class="fu">cvm.test</span>(<span class="at">x =</span> dados, <span class="at">null =</span> <span class="st">"pnorm"</span>, <span class="at">mean =</span> <span class="fu">mean</span>(dados) , <span class="at">sd =</span> <span class="fu">sd</span>(dados), <span class="at">estimated =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+    Cramer-von Mises test of goodness-of-fit
+    Braun's adjustment using 8 groups
+    Null hypothesis: Normal distribution
+    with parameters mean = 166.074626865672, sd = 46.724632862619
+    Parameters assumed to have been estimated from data
+
+data:  dados
+omega2max = 0.43348, p-value = 0.3736</code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="conclusões" class="level1">
+<h1>Conclusões</h1>
+<section id="testes-de-normalidade" class="level3">
+<h3 class="anchored" data-anchor-id="testes-de-normalidade">Testes de Normalidade</h3>
+<p>Quando aplicamos o teste de <strong>Lilliefors</strong>, obtemos um p-valor = 0,2797, ou seja, para níveis de confiança usuais como 1%, 5% ou 10% o teste sugere a não rejeição da hipótese nula de que os dados seguem distribuição normal. Entretanto, quando aplicamos o teste de <strong>Shapiro-Wilk</strong> obtemos um p-valor = 0,007059, ou seja, ele nos sujere a rejeição da hipótese nula de normalidade dos dados. Portanto, dada a maior robustez do teste de Shapiro-Wilk optou-se por <strong>rejeitar</strong> a hipótese de que os dados seguem uma distribuição normal. Ademais, o teste de Lilliefors é normalmente aplicado em conjunto de dados com menos de 50 observações, no nosso caso, nosso tamanho amostral é 67.</p>
+</section>
+<section id="kolmogorov-smirnov" class="level3">
+<h3 class="anchored" data-anchor-id="kolmogorov-smirnov">Kolmogorov-Smirnov</h3>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Weibull</th>
+<th>Gama</th>
+<th>Log-Normal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>p-valor | Sob</strong> <span class="math inline">\(H_{0}\)</span></td>
+<td>0,5512</td>
+<td>0,9901</td>
+<td>0,9972</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="cramérvon-mises" class="level3">
+<h3 class="anchored" data-anchor-id="cramérvon-mises">Cramér–von Mises</h3>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Weibull</th>
+<th>Gamma</th>
+<th>Log-Normal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>p-valor | Sob</strong> <span class="math inline">\(H_{0}\)</span></td>
+<td>0,6572</td>
+<td>0,5666</td>
+<td>0,5093</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="teste-de-anderson-darling-2" class="level3">
+<h3 class="anchored" data-anchor-id="teste-de-anderson-darling-2">Teste de Anderson-Darling</h3>
+<table class="table">
+<thead>
+<tr class="header">
+<th></th>
+<th>Weibull</th>
+<th>Gamma</th>
+<th>Log-Normal</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>p-valor | Sob</strong> <span class="math inline">\(H_{0}\)</span></td>
+<td>0,4658</td>
+<td>0.0005332</td>
+<td>0.9731</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><p>Os três testes não rejeitaram a hipótese nula de que os dados se ajustavam a uma distribuição <strong>Weibull</strong> com os parâmetros estimados;</p></li>
+<li><p>O teste de Kolmogorov-Smirnov e o teste de Crámer-von Mises não rejeitaram a hipótese de que os dados seguiam uma distribuição <strong>Gama</strong> com os parâmetros estimados, entretanto, o teste de Anderson-Darling rejeitou a hipótese de que os dados seguiam uma distribuição Gama com os parâmetros estimados;</p></li>
+<li><p>Os três testes não rejeitaram a hipótese nula de que os dados se ajustavam a uma distribuição <strong>Log-Normal</strong> com os parâmetros estimados, além disso, em média, foi a que apresentou os maiores níveis descritivos. Portanto, de acordo com a análise realizada e os testes aplicados, o modelo Log-Normal foi o que melhor se ajustou ao conjunto de dados.</p></li>
+<li><p>É importante salientar que as três distribuições citadas acima, se ajustaram de forma significante aos nossos dados, especialmente a distribuição Weibull e a distribuição Log-Normal.</p></li>
+</ul>
+</section>
+</section>
+<section id="referências" class="level1">
+<h1>Referências</h1>
+<ol type="1">
+<li><p>Santos Neto, J. P. <strong>Apresentação ENP05</strong>. Disponível em: <a href="https://rpubs.com/santosneto/enp05" class="uri">https://rpubs.com/santosneto/enp05</a>. Acesso em: 17 de setembro de 2023.</p></li>
+<li><p>Santos Neto, J. P. <strong>Apresentação ENP06</strong>. Disponível em: <a href="https://rpubs.com/santosneto/enp06" class="uri">https://rpubs.com/santosneto/enp06</a>. Acesso em: 17 de setembro de 2023.</p></li>
+<li><p>Santos Neto, J. P. <strong>Apresentação ENP07</strong>. Disponível em: <a href="https://rpubs.com/santosneto/enp07" class="uri">https://rpubs.com/santosneto/enp07</a>. Acesso em: 17 de setembro de 2023.</p></li>
+<li><p>Santos Neto, J. P. <strong>Apresentação ENP09</strong>. Disponível em: <a href="https://rpubs.com/santosneto/enp09" class="uri">https://rpubs.com/santosneto/enp09</a>. Acesso em: 17 de setembro de 2023.</p></li>
+<li><p>SIEGEL, Sidney; CASTELLAN JR, N. John. <strong>Estatística não-paramétrica para ciências do comportamento</strong>. Porto Alegre: Artmed Editora, 2006.</p></li>
+<li><p>BUSSAB, Wilton de O.; MORETTIN, Pedro A. <strong>Estatística Básica</strong>. 9ª ed.&nbsp;São Paulo: Saraiva, 2017.</p></li>
+</ol>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
