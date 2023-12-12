@@ -1,0 +1,71 @@
+create table estoque
+(
+cod int not null,
+ref nvarchar(50) not null, 
+prcomp dec(6, 2) not null,
+prven dec(6, 2) not null,
+qtde smallint not null,
+codfor smallint not null
+
+constraint estoque_PK
+primary key (cod),
+constraint estoque_FK_codfor
+foreign key (codfor) references fornecedores
+);
+----------------------------------------------------
+create table filiais
+(
+cod smallint NOT NULL,
+nome nvarchar(50) NOT NULL,
+cid nvarchar(50) not null,
+
+constraint filiais_PK
+primary key (cod)
+);
+---------------------------------------------------
+create table fornecedores
+(
+cod smallint not null,
+nome nvarchar(50) not null,
+cid nvarchar(50) not null,
+
+constraint fornecedores_PK
+Primary key (cod)
+);
+---------------------------------------------------
+create table historico
+(
+matrvend smallint not null,
+prvend dec(6, 2) not null,
+coditem int not null,
+dthoraven datetime not null,
+matr smallint not null,
+
+constraint PK_historico
+primary key clustered (matrvend, coditem),
+constraint historico_FK_item
+foreign key (coditem) references estoque,
+constraint historico_FK_vendedores
+foreign key (matrvend) references Vendedores
+constraint PK_historico2
+primary key (dthoraven)
+);
+----------------------------------------------------
+create table vendedores
+(
+matr smallint not null,
+CPF int not null,
+nome nvarchar (50) not null,
+salario dec (6,2) not null,
+codfil smallint NOT NULL,
+
+constraint vendedores_PK
+primary key (matr),
+constraint FK_vendedores
+foreign key (codfil) references filiais,
+constraint CPF_unico
+unique (CPF),
+constraint vendedores_UNIQ_matr
+unique (matr)
+)
+
