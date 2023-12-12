@@ -1,0 +1,474 @@
+---
+title: "Aplicação em Testes de Hipóteses"
+subtitle: "CC0291 - Estatística Não Paramétrica - Trabalho 02"
+author: Romulo Barros de Freitas
+format:
+  html:
+    code-fold: false
+    code-summary: "Show the code"
+output: bookdown::html_document2
+toc: true
+toc-title: "Sumário"
+editor: visual
+bibliography: referencias.bib
+csl: abnt_ipea.csl
+---
+
+# Introdução
+
+Métodos paramétricos são utilizados quando há o conhecimento prévio da distribuição populacional da variável de análise. Geralmente, supõe-se que ela tenha distribuição normal. Sendo comprovada a normalidade dos dados, pode-se, assim, utilizar-se de técnicas estatísticas como intervalos de confiança, e testes de hipóteses. Entretanto, nem sempre essa suposição de normalidade é atendida, nesses casos, portanto, é fundamental a utilização de métodos não-paramétricos, os quais não requerem conhecimento prévio da distribuição dos dados.
+
+Geralmente, as conclusões obtidas a partir de testes não paramétricos não são tão poderosas quanto as tiradas de testes paramétricos. No entanto, como os métodos não paramétricos fazem menos suposições, eles são mais flexíveis, mais robustos e aplicáveis a dados não quantitativos.
+
+A estatística não paramétrica é um conjunto de ferramentas que oferece uma abordagem para a análise de dados, permitindo um exame detalhado do comportamento das observações de amostras. Isso, por sua vez, viabiliza a investigação de hipóteses e a inferência de estimativas para uma população. Essa abordagem versátil encontra aplicação em diversos setores, incluindo economia, humanidades, saúde, indústria e muitos outros.
+
+Os testes não paramétricos desempenham uma função essencial, permitindo a comparação de distribuições, a identificação de relações e a avaliação de efeitos, tudo isso sem obrigatoriamente ter como referência primaria uma distribuição de probabilidade específica. Isso à torna, uma ferramenta de extremo valor em situações em que não temos conhecimento da natureza dos dados ou não segue um padrão paramétrico tradicional. Mas tem-se que ser falado que, geralmente, as conclusões obtidas a partir de testes não paramétricos não são tão poderosas quanto as tiradas de testes paramétricos. No entanto, como os métodos não paramétricos fazem menos suposições, eles são mais flexíveis, mais robustos e aplicáveis a dados não quantitativos.
+
+# Objetivos
+
+Neste relatório serão realizados testes de hipótese sobre uma base de dados com $21$ observações referente a proporção de vitorias em um jogo de fantasia, no qual cada usuário fez $112$ entradas. Além disso, queremos analisar se o indicie de vitórias dos usuários contra o aplicativo atende o esperado de $50\%$, tendo em mente que fatores externos podem agir e enviesar o comportamento dos dados, ou seja, observar se as vitorias foram obtidas por meio de mérito próprio ou por pura sorte. O objetivo consiste, também, em realizar testes de normalidade sobre os dados de proporção, fazendo uso, para isso, de testes não paramétricos, como Shapiro-Wilk e Kolmogorov-Smirnov. Em seguida, serão aplicados testes de hipótese como o Teste das Somas Ordenadas de Wilcoxon, o Teste Binomial e o Teste $t$-Student para uma amostra. Consequentemente, queremos analisar se a empresa responsável pelo jogo de fantasia tende a controlar a margem de ganho dos usuários.
+
+# Metodologia
+
+O trabalho foi feito por meio de uma pesquisa bibliográfica, e como ferramenta computacional foi utilizado o [software R](https://cran.r-project.org/bin/windows/base/) gratuito e de código aberto. Os dados para as análises são oriundos de uma base pré disponibilizada com $21$ observações, que representam a relação de vitorias de cada usuário em $112$ partidas jogadas. Inicialmente, será realizada uma análise descritiva dos dados, e em seguida, serão aplicados os testes de hipóteses e construídos intervalos de confiança. Para a construção dos intervalos de confiança foi considerado o nível de significância de $5\%$.
+
+## Testes de Hipóteses
+
+Uma hipótese geralmente consiste em uma declaração clara e específica que expressa uma relação entre duas ou mais variáveis ou uma previsão sobre os resultados de uma experiência ou estudo. Ela é formulada com base em conhecimento prévio, observações ou teorias existentes. O objetivo do teste de hipóteses é fornecer uma metodologia que permita verificar se os dados amostrais trazem evidências que apoiem ou não uma hipótese (estatística) formulada. \\citeauthor{morettin_estatistica_2021}\~\\cite{morettin_estatistica_2021}.\\\\
+
+Na análise, especificamos claramente qual hipótese temos o interesse de testar, a qual é denominada hipótese nula, e é denotada por:
+
+$$\mathcal{H}_0: \theta = \theta_{0}.$$
+
+Em seguida, definimos uma hipótese que será aceitável caso $\mathcal{H}_0$ não se verifique, a qual denominados de hipótese alternativa, podendo ser um dos casos a seguir:
+
+$$
+\mathcal{H}_1: \theta \neq \theta_{0}, \quad\mathcal{H}_1: \theta < \theta_{0}, \quad \text{ou} \quad \mathcal{H}_1: \theta < \theta_{0},
+$$
+
+em que $\theta$ é o parâmetro populacional que queremos testar e $\theta_{0}$ é o valor hipotético que está sendo testado.
+
+Em nosso caso de estudo, como queremos verificar se o sistema do jogo realmente fornece uma **proporção** de vitorias entre humano e máquina equilibrada, ou seja de $50\%$ de chance de ganhar cada, temos que a hipótese nula é $\mathcal{H}_0: p = 0,5$, em contra parte, a hipótese alternativa é $\mathcal{H}_1: p \neq 0,5$, em que $p$ representa o parâmetro da proporção de vitórias.
+
+Além disso, será realizado um teste de hipóteses unilateral para analisarmos a tendência dessa proporção, ou seja, se o jogador possui uma propensão a perder, indicando que a empresa controla a margem de ganho dos usuários do jogo. Nesse caso, as hipóteses que serão testadas são $\mathcal{H}_{0}: p \leq 0,5$ contra $\mathcal{H}_{1}: p > 0,5.$
+
+No livro \\textbf{Estatística Básica} \\cite\[\]\[pág. 353\]{morettin_estatistica_2021}, são apresentados alguns procedimentos que devem ser seguidos para a construção do teste de hipóteses, sendo eles:
+
+1.  Fixe qual a hipótese $\mathcal{H}_0$ a ser testada e qual a hipótese alternativa $\mathcal{H}_1$ ;
+
+2.  Use a teoria estatística e as informações disponíveis para decidir qual estatística (estimador) será usada para testar a hipótese $\mathcal{H}_0$. Obter as propriedades dessa estatística (distribuição, média, desvio padrão) ;
+
+3.  Fixe a probabilidade $\alpha$ de cometer o **erro de tipo I** e use este valor para construir a **região crítica** (regra de decisão). Lembre que essa região é construída para a estatística definida no passo 2, usando os valores do parâmetro hipotetizados por $\mathcal{H}_0$ ;
+
+4.  Use as observações da amostra para calcular o valor da estatística do teste ;
+
+5.  Se o valor da estatística calculado com os dados da amostra não pertencer à região crítica, não rejeite $\mathcal{H}_0$; caso contrário, rejeite $\mathcal{H}_0$.
+
+No trabalho serão utilizados dois testes que não fazem suposições a respeito da forma das distribuições, sendo eles: **Teste Binomia**l e **Teste das Somas Ordenadas de Wilcoxon**. Esses testes pertencem a uma categoria de procedimentos chamados não paramétricos ou livres de distribuição \\cite{morettin_estatistica_2021}. Além disso, também será utilizado o teste $t$**-Student**, onde se assume a normalidade dos dados.
+
+### Teste Binomial
+
+O teste binomial é utilizado quando a população em estudo consiste em variáveis aleatórias dicotômicas, ou seja, cada observação $x_{i}$ pode assumir apenas dois valores, geralmente denotados por $0$ ou $1$ \\cite{siegel_estatistica_2021}. Ademais, deve-se assumir que a probabilidade de selecionar um indivíduo da primeira categoria é $p$ e a probabilidade de selecionar um indivíduo da segunda categoria é $1-p$. Por conveniência, iremos denotar o resultado $X = 1$ como sucesso, ou seja, quando o jogador ganhar uma partida, e $X = 0$ como fracasso, quando ele perde a partida.
+
+Seja $X$ uma variável aleatória com distribuição binomial, ou seja, $X \sim Binomial(n,p)$, a sua função de probabilidade é dada por:
+
+$$
+\Pr(X = x ) = \binom{n}{x}p^x (1 - p)^{n - x}, \quad x = 0, \dots, n,
+$$
+
+além disso, sua função de distribuição acumulada será dada por:
+
+$$
+F_X(x) = \sum\limits_{x=0}^{[x]}\binom{n}{x}p^x (1 - p)^{n - x}, \quad \forall x \in \{0, 1, 2, \dots, n\}.
+$$
+
+Se $n$ for muito grande o cálculo de probabilidades por meio da expressão acima se torna complicado, entretanto, podemos ultilizar o Teorema do Limite Central de Abraham de Moivre/Pierre-Simon Laplace (1733), para aproximar a distribuição binomial pela distribuição normal padrão:
+
+$$
+\Pr(X \leq x) \to \Phi\left(\frac{x - np}{\sqrt{np(1-p)}}\right),
+$$
+
+ou,
+
+$$
+\frac{x - np}{\sqrt{np(1-p)}} \xrightarrow{D} N(0, 1),
+$$
+
+nesse caso,
+
+$$
+X \cong N(np, np(1 - p)).
+$$
+
+Como a distribuição binomial é discreta e estamos aproximando-a para uma distribuição contínua, no caso a normal, a aproximação se torna mais eficiente quando se utiliza correção de continuidade, ou seja:
+
+$$
+\Pr(X \leq x) \cong \Phi\left(\frac{x - np + 1/2}{\sqrt{np(1-p)}}\right) \quad \text{e} \quad \Pr(X \geq x) \cong 1- \Phi\left(\frac{x - np - 1/2}{\sqrt{np(1-p)}}\right).
+$$
+
+#### Pressuposições
+
+-   $n$ ensaios de bernoulli independentes;
+
+-   Variáveis dicotômicas;
+
+-   Probabilidade de "sucesso'' é constante.
+
+$$
+Z_{teste} = \frac{X_{obs} - np_0}{\sqrt{np_0(1 - p_0)}}.
+$$
+
+#### Intervalos de Confiança
+
+$$
+IC_{1-\alpha}(p) = \left[\hat{p} \pm z_{\alpha/2}\sqrt{\frac{\hat{p}(1-\hat{p})}{n}}\right].
+$$
+
+No *Software* R \\cite{noauthor_download_nodate}, o teste binomial exato é realizado por meio da função `binom.test()` e o teste binomial aproximado pela distribuição normal com correção de continuidade é realizado por meio da função `prop.test()` adicionando-se o comando `correct = TRUE`. É importante salientar que neste trabalho será realizado o teste binomial exato.
+
+### Teste das Somas Ordenadas de Wilcoxon
+
+O teste das somas ordenadas de Wilcoxon para uma amostra é uma alternativa não paramétrica ao teste $t$ quando não se assume o pressuposto de normalidade dos dados. Ele é utilizado para verificar se um parâmetro de localização $m$, é igual a uma valor pré estabelecido $m_0$, através da amostra. Ele leva em consideração a magnitude das observações em relação ao valor hipotético $m_0$. Para o referente trabalho estamos testanto a proporção de vitórias de jogadores de um determinado jogo de fantasia, portanto, denotaremos nosso parâmetro de localização por $p_0 = 0,5$.
+
+Aqui é calculado as diferenças $D_i = X_i - m_0, \quad i = 1, 2, \ldots ,n$, em que $X_i$ é o valor da i-ésima observação, posteriormente , ordena-se os módulos das diferenças e atribui-se postos. No teste das somas ordenadas de Wilcoxon, temos as seguintes estatísticas:
+
+$$
+T^{+} = \text{soma dos postos das diferenças positivas, e}
+$$
+
+$$
+T^{-} = \text{soma dos postos das diferenças negativas}.
+$$
+
+Com a suposição de simetria, se $\mathcal{H}_{0}$ for verdadeira, as diferenças $D_i$ são simetricamente distribuídas em torno do zero, de maneira que as diferenças positivas e negativas de mesma magnitude, em valor absoluto,têm a mesma probabilidade de ocorrência. Portanto, se $m_0$ for a verdadeira mediana, $T^{+}$ e $T^{-}$ devem ser aproximadamente iguais.
+
+#### Pressuposições
+
+-   A distribuição da variável $X$ é simétrica e $X$ pode ter qualquer distribuição;
+
+-   A distribuição da variável $X$ na população tem mediana $m_0$ (desconhecida) e $Pr(X = m) = 0$, ou seja, $X$ é uma variável aleatória contínua.
+
+**Estatística do Teste**
+
+$$
+\sum^{n}_{k=1} k = \frac{n(n+1)}{2}
+$$
+
+Quando o tamanho da amostra $(n)$ for maior do que $15$, a soma dos postos $T^+$ tem distribuição aproximadamente normal com média
+
+$$
+\mu_{T^+} = \frac{N(N+1)}{4}
+$$
+
+e variância
+
+$$
+\sigma^2_{T^+} = \frac{N(N+1)(2N+1)}{24}.
+$$
+
+A estatística do teste será dada por:
+
+$$
+z = \frac{T^{+} - \mu_{T^+}}{\sigma_T^+} = \frac{T^+ - N(N+1)/4}{\sqrt{N(N+1)(2N+1)/24}} \sim N(0,1).
+$$No *Software* R \\cite{noauthor_download_nodate}, o teste das somas ordenadas de Wilcoxon é realizado por meio da função `wilcoxon.test()`, adicionando-se o comando `correct = TRUE` é obtido o teste aproximado pela distribuição normal. Entretanto, é importante salientar que neste trabalho será realizado o teste exato, sem aproximação.
+
+### Teste $t$ - Student
+
+O teste $t$-Student para uma amostra é utilizado quando queremos testar se o valor da média populacional $\mu$ é igual a um valor hipótético $\mu_0$. Para a aplicação desse tipo de teste é necessário assumir o pressuposto de normalidade dos dados, além disso, utilizamos a variância $S^2$ amostral, já que na prática não conhecemos a verdadeira variância $\sigma^2$ da população em estudo. O teste $t$-Student, geralmente é aplicado em amostras pequenas com $n \leq 30$.
+
+#### Estatística do Teste
+
+$$
+T_0 = \frac{\bar{x} - \mu_{0}}{\frac{s}{\sqrt{n}}},
+$$
+
+em que
+
+-   $\bar{x}$ é a média amostral ;
+
+-   $\mu_0$ valor da média populacional sob a hipótese $\mathcal{H}_0$ ;
+
+-   $s$ é o desvio padrão amostral ;
+
+-   $n$ é o tamanho da amostra.
+
+Quanto maior for a diferença $\bar{x} - \mu_0$, maior será o valor de $t_0$ , ou seja, quanto maior a distância dos valores observados ao valor que estamos comparando, maior será a certeza em afirmar que elas são diferentes\\cite{noauthor_teste_2023}.
+
+#### Pressuposições
+
+-   Normalidade dos dados.
+
+#### Intervalos de Confiança
+
+$$
+IC_{1-\alpha}(\mu) = \left[\bar{x} \pm t_{\alpha/2} \frac{s}{\sqrt{n}}\right].
+$$
+
+onde $t_{\alpha/2}$ é o quantil da distribuição $t$-Student associado ao nível de siginificância $\alpha$. No nosso caso de estudo, temos $n = 21$, portanto, $t_{\alpha/2} = 2,080$.
+
+No *Software* R \\cite{noauthor_download_nodate}, o teste $t$-Student é realizado por meio da função `t.test()`.
+
+# Resultados
+
+A Tabela 1 mostra a proporção de vitórias de $21$ jogadores de um jogo de fantasia, onde cada jogador realizou $112$ jogadas.
+
+\| \\textbf{Jogador} \| \\textbf{Proporção de Vitórias} \| \\textbf{Número de Vitórias\\tnote{\*}} \|
+
+\|\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--\|\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\--\|
+
+\| 1 \| 0,32 \| 35,00 \|
+
+\| 2 \| 0,37 \| 41,00 \|
+
+\| 3 \| 0,41 \| 46,00 \|
+
+\| 4 \| 0,51 \| 57,00 \|
+
+\| 5 \| 0,52 \| 58,00 \|
+
+\| 6 \| 0,37 \| 41,00 \|
+
+\| 7 \| 0,26 \| 29,00 \|
+
+\| 8 \| 0,45 \| 51,00 \|
+
+\| 9 \| 0,29 \| 33,00 \|
+
+\| 10 \| 0,31 \| 35,00 \|
+
+\| 11 \| 0,22 \| 24,00 \|
+
+\| 12 \| 0,43 \| 48,00 \|
+
+\| 13 \| 0,54 \| 60,00 \|
+
+\| 14 \| 0,50 \| 56,00 \|
+
+\| 15 \| 0,43 \| 49,00 \|
+
+\| 16 \| 0,47 \| 53,00 \|
+
+\| 17 \| 0,35 \| 39,00 \|
+
+\| 18 \| 0,47 \| 53,00 \|
+
+\| 19 \| 0,46 \| 52,00 \|
+
+\| 20 \| 0,62 \| 70,00 \|
+
+\| 21 \| 0,37 \| 41,00 \|
+
+## Análise Descritiva dos Dados
+
+```{r warning=FALSE, message=FALSE, echo=FALSE}
+setwd("C:/Disciplinas Graduacao/Estatística Não Paramétrica/Projeto 2")
+
+library(tidyr)
+library(tidyverse)
+library(e1071)
+library(xtable)
+library(ggplot2)
+library(ggpubr)
+library(nortest)
+library(DescTools)
+library(fitdistrplus)
+
+dados = read.csv('dados_projeto.csv')
+colnames(dados) = c('jogador', 'prop_vitorias')
+dados['vitorias'] = round(dados$prop_vitorias*112)
+View(dados)
+
+medidas.descritivas_prop = dados %>%
+  summarise(
+    media = mean(dados$prop_vitorias),
+    q1 = quantile(dados$prop_vitorias, probs = 0.25),
+    q2 = median(dados$prop_vitorias),
+    q3 = quantile(dados$prop_vitorias, probs = 0.75),
+    desv.pd = sd(dados$prop_vitorias),
+    minimo = min(dados$prop_vitorias),
+    maximo = max(dados$prop_vitorias),
+    curt = kurtosis(dados$prop_vitorias),
+    assi = skewness(dados$prop_vitorias)
+  );medidas.descritivas_prop
+
+medidas.descritivas_vit = dados %>%
+  summarise(
+    media = mean(dados$vitorias),
+    q1 = quantile(dados$vitorias, probs = 0.25),
+    q2 = median(dados$vitorias),
+    q3 = quantile(dados$vitorias, probs = 0.75),
+    desv.pd = sd(dados$vitorias),
+    minimo = min(dados$vitorias),
+    maximo = max(dados$vitorias),
+    curt = kurtosis(dados$vitorias),
+    assi = skewness(dados$vitorias)
+  );medidas.descritivas_vit
+
+```
+
+Ao calcularmos as medidas descritivas dos dados, observamos uma média de $0,41$, um desvio padrão de $0,10$, e mediana de $0,43$. A assimetria calculada foi de $-0,04$, indicando que os valores são ligeiramente assimétricos a esquerda, ou seja, os dados possuem uma leve tendência a se concentrarem mais a direita do valor médio. Em relação à curtose, o valor obtido foi de $-0.77$, indicando uma distribuição platicúrtica, ou seja, os dados são menos concentrados ao redor da média comparado a uma distribuição normal, resultando em caudas mais leves e achatadas.
+
+### Teste de Shapiro-Wilk
+
+O teste de Shapiro-Wilk é usado para verificar se uma amostra de dados segue uma distribuição normal. Ele é especialmente sensível a desvios da normalidade na cauda da distribuição e é amplamente utilizado quando se suspeita que os dados não são normalmente distribuídos. A hipótese nula $\mathcal{H}_0$ do teste afirma que os dados são normalmente distribuídos. Se o valor-p resultante for menor que um nível de significância previamente escolhido, a hipótese nula é rejeitada, indicando que os dados não seguem uma distribuição normal. \\citeauthor{linebach_nonparametric_2014}\~\\cite{linebach_nonparametric_2014}.
+
+```{r}
+shapiro.test(dados$prop_vitorias)
+```
+
+### Teste de Kolmogorov-Smirnov
+
+O teste de Kolmogorov-Smirnov é usado para verificar se uma amostra de dados segue uma distribuição especifica. Ele compara a distribuição acumulada empírica dos dados com a distribuição acumulada teórica da distribuição especificada. A hipótese nula $\mathcal{H}_0$ afirma que os dados seguem a distribuição especificada. Se o valor-p for menor que o nível de significância escolhido, a hipótese nula é rejeitada \\cite{linebach_nonparametric_2014}.
+
+```{r}
+ks.test(dados$prop_vitorias, 'pnorm', mean = 0.41333617, sd = 0.09864619)
+```
+
+# Aplicação dos Testes de Hipóteses
+
+## Teste Binomial
+
+Ao realizarmos uma análise individual, podemos afirmar que a proporção $\hat{p}$ de vitórias de cada jogador é resultado do número de sucessos $S$ em $112$ jogadas, ou seja:
+
+$$
+\hat{p} = \frac{S}{112},
+$$
+
+além disso, cada jogador $X_{i}$ pode ser descrito por meio de uma distribuição Binomial com parâmetros $\hat{p} = \frac{S}{n}$ e $n = 112$, ou seja:
+
+$$
+X_1 \sim Binomial(0,32; 112);
+X_2 \sim Binomial(0,37; 112);
+X_3 \sim Binomial(0,41; 112);
+X_4 \sim Binomial(0,51; 112);
+X_5 \sim Binomial(0,52; 112);
+\vdots
+X_{20} \sim Binomial(0,62; 112);
+X_{21} \sim Binomial(0,37; 112).
+$$
+
+Dessa maneira, podemos realizar um teste de hipóteses para a verdadeira proporção de vitórias de cada jogador, e como o objetivo do estudo proposto é analisar se o jogo possui um certo viés ou tendência, iremos considerar as seguintes hipóteses:
+
+$$
+    \mathcal{H}_0: p = 0,5 \quad \text{versus} \quad \mathcal{H}_1: p \neq 0,5,
+$$
+
+Nota-se, ademais, que $n=112$ pode ser considerado um tamanho amostral relativamente grande para o estudo proposto, desse modo, torna-se viável a aproximação da distribuição binomial pela distribuição normal. No entanto, será realizado, neste trabalho, o teste binomial exato, visto que o software R possui essa alternativa por meio da função `binom.test()`. Além disso, foram construídos intervalos de confiança com nível de significância de $5\%$ para a proporção de vitórias dos jogadores. Na Tabela 4.3 estão os níveis descritivos e os respectivos intervalos de confiança para a proporção de vitórias de cada jogador:
+
+Por meio da análise dos níveis descritivos, há evidências estatísticas de que os jogadores **1, 2, 6, 7, 9, 10, 11, 17 e 21** não possuem proporção de vitórias igual a $0,5$, isso, levando em consideração os níveis de significância usuais de $1\%, 5\%$ ou $10\%$. É importante destacar que o jogador de número **20** apresentou um nível descritivo igual a $0,0104$, ou seja, ao nível de significância de $1\%$, por exemplo, não rejeitaríamos a hipóteses nula.
+
+```{r message=FALSE, warning=FALSE}
+# Teste Binomial:
+p_valores = c()
+n = length(dados$vitorias)
+ic_inf = c()
+ic_sup = c()
+
+for (i in 1:n) {
+  teste = binom.test(dados$vitorias[i], 112, alternative = 'two.sided',
+                     conf.level = 0.95)
+  p_valores[i] = teste$p.value
+  ic_inf[i] = teste$conf.int[1]
+  ic_sup[i] = teste$conf.int[2]
+}
+
+dados2 = data.frame(Jogador = 1:n, P_Valor = round(p_valores, 4), 
+                             IC_Inferior = round(ic_inf, 4), IC_Superior = round(ic_sup, 4))
+```
+
+```{r message=FALSE, warning=FALSE}
+#GRAFICO PARA OS ICS
+ggplot(data = dados2, aes(x = Jogador, ymin = IC_Inferior, ymax = IC_Superior, 
+                          color = (IC_Inferior >= 0.5 | IC_Superior >= 0.5))) +
+  geom_linerange(size = 1.5) +  # Aumenta a espessura das linhas
+  geom_hline(yintercept = 0.5, linetype = "dashed", color = "black") +
+  labs(x = "Jogador", y = "Intervalo de Confiança") +
+  theme_bw() +  # Fundo branco
+  theme(panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank()) +  # Remove as linhas de grade
+  scale_color_manual(values = c("TRUE" = "steelblue", "FALSE" = "tomato")) +
+  guides(color = FALSE)  # Remove a legenda de cores
+
+```
+
+A partir da análise dos intervalos de confiança, contruídos com um nível de significância de $5\%$, podemos observar que $12$ dos $21$ players, incluindo os jogadores **3, 4, 5, 8, 12, 13, 14, 15, 16, 18, 19 e 20**, têm uma variação que abrange a proporção de vitórias que está sendo testada. Isso significa que, com $95\%$ de confiança, podemos afirmar que a verdadeira proporção de vitórias associada a esses jogadores está contida em seus respectivos intervalos, fornecendo uma estimativa mais robusta da variabilidade da proporção na amostra.
+
+## Teste das Somas Ordenadas de Wilcoxon
+
+Por meio do teste das somas ordenadas de Wilcoxon, queremos analisar se os resultados obtidos no jogo de fantasia são resultado de sorte ou se existe alguma tendência, para isso, será realizado um teste de hipóteses bilateral, onde as hipóteses a serem testadas são:
+
+$$
+    \mathcal{H}_0: p = 0,5 \quad \text{versus} \quad \mathcal{H}_1: p \neq 0,5,
+$$
+
+onde a hipótese nula $\mathcal{H}_0$ afirma que a probabilidade do jogador ter vencido a partida foi por pura sorte, ou seja, espera-se que a proporção de vitórias $p$ seja igual a $0,5$, e a hipótese alternativa $\mathcal{H}_1$ afirma que o jogo possui algum tipo de viés. Para a realização do teste foi utilizada a função `wilcoxon.test()`, a qual retornou o seguinte resultado:
+
+```{r, warning=FALSE, message=FALSE}
+wilcox.test(dados$prop_vitorias, mu = 0.5, alternative = "two.sided",
+            exact = TRUE, correct = FALSE, conf.int = TRUE)
+```
+
+A partir do teste realizado, obteve-se um $p-valor = 0,0008516$, o que nos leva a rejeição da hipótese nula aos níveis de confiança usuais de $1\%, 5\%$ e $10\%$. Além disso, o intervalo de confiança de $95\%$ fornecido nos retornou:
+
+$$
+IC[p;95\%] = [03668155; 04642857],
+$$
+
+e como o valor $0,5$ não está contido no intervalo, não há evidências estatísticas, com nível de confiança de $95\%$ de que o verdadeiro valor para o parâmetro $p$ seja igual a $0,5$. Dessa maneira, podemos suspeitar de que o jogo possui algum tipo de viés ou tendência.
+
+Em segundo lugar, analisamos se a proporção de vitórias obtidas pelos jogadores indicariam algum viés do jogo de fantasia, para isso foi realizado um teste de hipóteses e um intervalo de confiança unilateral à direita:
+
+$$
+    \mathcal{H}_0: p \leq 0,5 \quad \text{versus} \quad \mathcal{H}_1: p > 0,5
+$$
+
+```{r, message=FALSE, warning=FALSE}
+wilcox.test(dados$prop_vitorias, mu = 0.5, alternative = 'greater',
+            exact = FALSE, correct = FALSE, conf.int = TRUE)
+```
+
+Após a realização do teste, não rejeitamos a hipótese $\mathcal{H}_0$ com o nível descritivo $p-value = 0,9992$ e do intervalo de confiança unilateral $[0,3716215; \infty]$, uma vez que o valor que estamos tentando não está contido no intervalo.
+
+## Teste $t$-Student
+
+Os dados referentes à proporção de vitórias dos jogadores assumiram o pressuposto de normalidade de acordo com o teste de Shapiro-Wilk e o teste de Kolmogorov-Smirnov, portanto, podemos usar técnicas paramétricas para avaliar se o jogo de fantasia é de pura sorte ou não. Além disso, obtivemos uma média amostral $\bar{x} = 0,41$ e um desvio padrão amostral $s = 0,10$.
+
+Inicialmente, considerando-se a amostra de jogadores $n=21$ pequena, e com variância populacional $\sigma^2$ desconhecida, o teste $t$ é o que mais se enquadra nesse cenário, de acordo com seus pressupostos\\cite{morettin_estatistica_2021}. As hipóteses a serem testadas são:
+
+$$
+    \mathcal{H}_0: \mu = 0,5 \quad \text{versus} \quad \mathcal{H}_1: \mu \neq 0,5,
+$$
+
+Utilizando a função `t.test()`, obtivemos os seguintes resultados:
+
+```{r}
+t.test(dados$prop_vitorias, mu = 0.5, alternative = 'two.sided', 
+       conf.level = 0.95)
+```
+
+Após a realização do teste, rejeitamos a hipótese $\mathcal{H}_0$ com o nível descritivo $p-valor = 0,0008307$ e do intervalo de confiança $[0,3673241; 0,4593483]$. Ou seja, aos níveis de significância usuais, como $1\%, 5\%$ ou $10\%$, não há evidências estatísticas que o jogo é de sorte, além disso, com nível de confiança de $95\%$, rejeitamos a hipótese nula, visto que o valor que está sendo testado não está contido no intervalo.
+
+Após a realização do teste bilateral, constatamos que o jogo apresenta uma certa tendência ou viés, e assim não se caracteriza como um jogo de sorte, já que a proporção de vitórias não é o que seria esperado, no caso, $0.5$.
+
+Para visualizar essa tendência ou viés será realizado um teste de hipóteses unilateral à direita, em que a hipótese nula $\mathcal{H}_0$ afirma que a proporção de vitórias dos jogadores é menor que $\frac{1}{2}$, ou seja, o jogo apresenta uma tendência de apresentar maiores derrotas do que vitórias.
+
+$$
+    \mathcal{H}_0: \mu \leq 0,5 \quad \text{versus} \quad \mathcal{H}_1: \mu > 0,5.
+$$
+
+Utilizando a função `t.test()`, obtivemos os seguintes resultados:
+
+```{r}
+t.test(dados$prop_vitorias, mu = 0.5, alternative = 'greater', 
+       conf.level = 0.95)
+```
+
+Após a realização do teste, não rejeitamos a hipótese $\mathcal{H}_0$ com o nível descritivo $p-valor = 0,9996$ e do intervalo de confiança unilateral $[0,3752924; \infty]$, uma vez que o valor que estamos tentando não está contido no intervalo.
+
+# Conclusões
+
+Após a aplicação do Teste Binomial, do Teste das Somas Ordenadas de Wilcoxon e do Teste t-Student, podemos concluir que o jogo de fantasia não apresenta uma proporção de vitórias $p = 0,5$, o que o caracterizaria como um jogo de sorte. Além disso, podemos afirmar que o jogo possui uma tendência ou viés que faz com que os jogadores percam mais partidas do que ganhem, isso foi comprovado por meio de teste de hipóteses unilaterais à direita e dos intervalos de confiança.
+
+Na análise geral da proporção de vitórias de cada jogador, o teste das somas ordenadas de Wilcoxon e o teste $t$-Student rejeitaram a hipótese nula $\mathcal{H}_{0}: p = 0,5$, com níveis descritivos $0,0008516$ e $0,0008307$, respectivamente. Como citado anteriormente, o teste das somas ordenadas de Wilcoxon é uma alternativa ao teste $t$-Student quando não se assume o pressuposto de normalidade, entretanto, nossa variável de estudo $p$ pode ser considerada normal, fato que foi comprovado pelos testes Shapiro-Wilk e Kolmogorov-Smirnov.
+
+Sendo assim, há evidencias estatísticas de que a empresa responsável pelo jogo de fantasia tende a controlar a proporção de vitórias de seus usuários, fazendo com que as vitórias ou derrotas dos jogadores não se caracterize por sorte ou azar.
