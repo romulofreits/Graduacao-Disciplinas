@@ -1,0 +1,120 @@
+-- Criação do Banco de Dados CEstoque
+-- Maria Leticia e Romulo Freitas
+
+-- Criando a tabela Filiais
+create table Filiais
+(
+codfil smallint NOT NULL,
+nome char(30) NOT NULL,
+endereco varchar(30) not null,
+cidade_loc varchar(30) not null,
+
+constraint Pk_filial 
+primary key (codfil)
+);
+
+-- Criando a tabela fornecedores
+create table Fornecedor
+(
+codfor smallint not null,
+nome varchar (50) not null,
+rua varchar (50) not null,
+cep varchar (50) not null,
+cidade char (30) not null,
+numero char not null,
+
+constraint Pk_fornecedor
+Primary key (codfor)
+);
+
+-- Criando a tabela Estoque
+create table Estoque
+(
+coditem smallint not null,
+codfor smallint not null, 
+prvenda dec(11, 2) not null,
+prcompra dec(11, 2) not null,
+nome char (30) not null,
+qtd int not null,
+
+constraint Pk_estoque
+primary key (coditem),
+constraint Fk_estoque
+foreign key (codfor) references Fornecedor
+)
+
+-- Criando a tabela Vendedores
+create table Vendedores
+(
+matr smallint not null,
+RG int not null,
+CPF int not null,
+nome varchar (50) not null,
+salario dec (10,2) not null,
+codfil smallint NOT NULL,
+gerente smallint
+
+constraint Pk_vendedores
+primary key (matr),
+constraint Fk_filiais
+foreign key (codfil) references Filiais,
+constraint fk_gerente
+foreign key (gerente) references Filiais,
+constraint unico_cpf
+unique (CPF),
+constraint unico_rg
+unique (RG),
+
+constraint salario
+check (salario>1200)
+);
+
+-- Tabela Telefones_Dep
+create table Telefones_Dep
+(
+tipo_fone varchar (10) not null,
+num_fone varchar (15) not null,
+codfor smallint not null
+
+constraint pk_fone
+primary key clustered (num_fone, codfor)
+
+constraint fk_fone
+foreign key (codfor)
+references Fornecedor (codfor)
+);
+
+-- Criando a tabela Vendas
+create table Vendas
+(
+qtd_vendas smallint not null,
+prvenda dec(11, 2) not null,
+coditem smallint not null,
+dt_hora datetime default getdate(),
+matr smallint not null,
+
+constraint pk_vendas
+primary key clustered (dt_hora, coditem, matr),
+constraint fk_vendas
+foreign key (coditem) references Estoque,
+constraint fk_vendas2
+foreign key (matr) references Vendedores
+);
+
+-- Tabela compras
+create table Compras
+(
+coditem smallint not null,
+dt_hora datetime default getdate(),
+codfor smallint not null,
+qtd_adq smallint not null,
+prcompra dec(11, 2) not null
+
+constraint pk_compras
+primary key clustered (dt_hora, codfor),
+constraint fk_compras
+foreign key (coditem) references Estoque,
+constraint fk_compras2
+foreign key (codfor) references Fornecedor
+)
+
