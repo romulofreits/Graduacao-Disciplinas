@@ -1,0 +1,89 @@
+# Exercício dia 19/10/2022
+# Entrando com os valores das variáveis
+# diretamente
+
+y=c(8.81,15.61,15.44,9.12,9.13,15.19,
+    17.95,12.71,10.91,10.79)
+# y_i: Representa o faturamento 
+#     (em 1000 reais) da empresa no i-ésimo mês
+x=c(2.98,5.25,5.02,2.81,2.71,5.46,
+    5.79,4.23,3.33,3.44)
+# x_i: Representa o investimento com propaganda 
+#     (em 1000 reais) da empresa no i-ésimo mês
+
+# Criando uma matriz de dados
+dados=data.frame(y,x)
+dados
+
+# Diagrama de dispersão entre y e x
+?plot # para ver os argumentos da função "plot"
+plot(x,y,xlab="Investimento (em 1000 R$) com propaganda",
+ylab="Faturamento (em 1000 R$)",type="p",pch=16)
+
+ ## Pelo gráfico de dispersão, temos uma forte evidência
+ ## empírica que o MRLS parece ser adequado.
+
+ # "lm - Linear Models --> Função utilizada 
+ # para ajustar modelos lineares no R
+
+?lm # Vendo os argumentos da função
+ajuste<-lm(y~x) # Ajustando o MRLS y=beta_0+beta_1x+e
+summary(ajuste) # Resumo do modelo ajustado
+
+ # Pelo resumo do modelo ajustado, temos que
+ #\hat{beta_0}= 1,42
+ #\hat{beta_1}= 2,71
+
+# Diagrama de dispersão com a reta de regressão
+# ajustada, i.e., com \hat{y}=\hat{beta_0}+\hat{beta_1}x$
+plot(x,y,main="Diagrama de dispersão vs. valores ajustados", 
+xlab="Investimento (em 1000 R$) com propaganda",
+ylab="Faturamento (em 1000 R$)",type="p",pch=16)
+abline(ajuste$coef,lty=3,col="red")
+text(4.3,12,expression(hat(y[i])==hat(beta[0])+hat(beta[1])*x[i]),col="red")
+
+# Fazendo predições
+
+new <- data.frame(x = 3)
+predict(lm(y ~ x), new, se.fit = TRUE)
+
+
+## Diagnóstico
+
+## Rodar as funcoes envel.norm/ diag.norm e dmax.norm (http://www.ime.usp.br/~giapaula)
+
+### Usando o novo procedimento
+
+fit.model <- ajuste
+attach(dados)
+source("D:/UFC-DEMA/Disciplinas/Graduação/Disciplinas_2022.1/Modelos de Regressão I/Aulas/MRLS/Exemplo diagnóstico + funções/envel_norm.txt")
+
+
+
+fit.model <- ajuste
+attach(dados)
+source("D:/UFC-DEMA/Disciplinas/Graduação/Disciplinas_2022.1/Modelos de Regressão I/Aulas/MRLS/Exemplo diagnóstico + funções/diag_norm.txt")
+
+    ### Usando as funções antigas (minha preferência)--> Rodar as funções envel.norm, diag.norm e dmax.norm
+
+
+envel.norm(ajuste)
+envel.norm(ajuste,iden=2)## Identificar o rótulo das observações
+diag.norm(ajuste)
+diag.norm(ajuste,iden=c(2,2,2,0,1,2)) ## Identificar o rótulo das observações
+dmax.norm(ajuste)
+dmax.norm(ajuste,iden=c(3,2)) ## Identificar o rótulo das observações
+
+
+
+
+   ### Exercícios 
+
+         ### Fazer em formato de relatório no latex. (mostrar exemplo Lista II)
+
+
+1. Fazer diagnóstico no exemplo das faturas feita em sala de aula.
+
+2. Fazer os exercícios 1-10 (livro Charnet et al., pgs 142-146). 
+
+
