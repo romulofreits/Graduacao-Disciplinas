@@ -1,0 +1,138 @@
+---
+title: "Simulação de Intervalos de Confiança"
+subtitle: "CC0290 Modelos de Regressão I - Trabalho 02"
+author: 
+- Antônio Arthur Silva de Lima
+- Francisco Gustavo Braga Batista
+- Romulo Barros de Freitas
+format:
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+output: bookdown::html_document2
+toc: true
+toc-title: "Sumário"
+editor: visual
+---
+
+# Intervalos de Confiança para $\beta_{1}$
+
+A estatística $T_{0}$ segue uma distribuição t-Student com $(n-2)$ graus de liberdade, e é utilizada para a construção de intervalos de confiança pra o parâmetro $\beta_{1}$ no modelo de regressão linear simples:
+
+$$
+T_0=\frac{\hat{\beta}_1-\beta_1}{\sqrt{\frac{\text { QMRES }}{S x x}}} \sim t(n-2)
+$$
+
+## Observações
+
+-   $T_{0}$ é simétrica em torno da origem, portanto, os $IC's$ definidos possuem o menor comprimento possível;
+
+-   Para um tamanho de amostra grande $(n \rightarrow \infty)$, podemos trocar $t(1-\alpha/2;n-2)$ por $z(1-\alpha/2)$.
+
+-   Se a normalidade de $\hat\beta_{1}$ não se verificar, o IC é válido apenas assintoticamente **(TCL)**.
+
+Supondo que os valores observados sejam normal e independentemente distribuídos **(iid)**, um intervalo de confiança de 100(1 - $\alpha$ )% para o coeficiente de inclinação $\beta_{1}$ no modelo de regressão linear simples é:
+
+$$
+\left.\operatorname{IC}\left(\beta_1 ; 100(1-\alpha) \%\right)=\hat{\beta}_1 \pm t(1-\alpha/2); n-2\right) \cdot \sqrt{\frac{\text { QMRES }}{S x x}}
+$$
+
+# Simulação
+
+```{r}
+#| code-fold: show
+# semente para a geração de números
+set.seed(0)
+
+# base de dados
+dados = iris
+```
+
+```{r}
+#| code-fold: show
+
+#modelo de regressão linear simples
+m = lm(iris$Petal.Width ~ iris$Sepal.Length); summary(m)
+```
+
+## Calculando o Quadrado Médio Residual:
+
+```{r}
+#| code-fold: show
+resp = dados$Petal.Width; exp = dados$Sepal.Length
+Qmres = (sum((resp - mean(resp))^2) - sum((exp - mean(exp))*resp)^2/sum((exp - mean(exp))^2))/(length(exp)-2); Qmres
+```
+
+## Gerando 100 amostras de tamanho 30:
+
+```{r}
+#| code-fold: show
+amostras = c()
+for(i in 1:100){
+  amostras[i] = list(sample(dados$Sepal.Length, 30, replace = T))
+}
+```
+
+## Função para calcular os estimadores de $\beta_{1}$ e o $QM_{Res}$ para cada amostra, dado um $Y_{i}$ normal com os parâmetros anteriores:
+
+```{r}
+#| code-fold: show
+calculo = function(x){
+  x = unlist(x)
+  xb = mean(x); Sxx = sum((x - xb)^2)
+  y = rnorm(30, m$coe[1]+m$coe[2]*x, Qmres*(1/length(x) + (x - xb)^2/Sxx))
+  yb = mean(y); Syy = sum((y -yb)^2); Sxy = sum((x - xb)*y)
+  QMRes = (Syy - Sxy^2/Sxx)/(length(x)-2)
+  beta1_est = Sxy/Sxx
+  erro = sqrt(QMRes/Sxx)
+  return(c(beta1_est, erro))
+}
+```
+
+```{r}
+#| code-fold: show
+# testando para uma única amostra
+calculo(amostras[1])
+```
+
+```{r}
+#| code-fold: show
+
+
+# t(1-alfa/2, n-2), pois a hipótese considerada é bilateral, com alfa = 5%
+t = qt(1-0.05/2,28); t
+
+# cnstruindo os intervalos
+intervalos = c()
+for(i in 1:100){
+  intervalos[i] = list(round(calculo(amostras[i])[1]+c(-1,1)*t*calculo(amostras[i])[2], 3))
+}
+```
+
+## Visualização Gráfica
+
+```{r}
+# plotando os intervalos de confiança:
+library(ggplot2)
+ic_df <- data.frame(
+  Amostra = 1:100, 
+  li = unlist(lapply(intervalos, function(x) x[1])),
+  ls = unlist(lapply(intervalos, function(x) x[2]))
+)
+
+ggplot(ic_df, aes(x = Amostra, y = li)) +
+  geom_point(aes(color = "Intervalo de Confiança"), size = 2) +
+  geom_errorbar(aes(ymin = li, ymax = ls), width = 0.2) +
+  labs(x = "Amostra", y = "Intervalo de Confiança") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+```
+
+# Conclusões
+
+Neste estudo de simulação utilizando a base de dados Iris, foram geradas 100 amostras de tamanho 30, e para cada uma delas, calculamos intervalos de confiança com um nível de significância de 5% para o estimador $\beta_{1}$ . Ao analisar os resultados, observamos que 75% dos intervalos de confiança incluem o verdadeiro valor do parâmetro estimado. Isso indica que, em média, os intervalos de confiança, capturaram com sucesso o valor verdadeiro de $\beta_{1}$ em 75% das amostras.
+
+É importante notar que os intervalos que construímos são bilaterais, isso significa que consideramos a possibilidade de que o valor verdadeiro de $\beta_{1}$ esteja tanto acima quanto abaixo do intervalo observado. No entanto, devido ao tamanho relativamente pequeno das amostras (30 itens), a precisão dos estimadores intervalares pode não ser tão alta quanto a obtida em tamanhos de amostra maiores, como +100 ou +1000.
+
+Portanto, ao interpretar esses resultados, é fundamental reconhecer que a precisão dos intervalos de confiança está relacionada ao tamanho amostral e à natureza bilateral dos intervalos. Essas considerações devem ser levadas em conta ao aplicar esses resultados em diferentes contextos de análise de dados.
